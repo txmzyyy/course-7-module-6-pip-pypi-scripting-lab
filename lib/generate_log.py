@@ -2,42 +2,48 @@ from datetime import datetime
 import os
 import requests
 
-def fetch_data():
-    response = requests.get("https://jsonplaceholder.typicode.com/posts/1")
+def fetch_post():
+    url = "https://jsonplaceholder.typicode.com/posts/1"
 
-    if response.status_code == 200:
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
         return response.json()
 
-    return {}
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+        return None
 
 
-def generate_log(log_data):
-    if not isinstance(log_data, list):
-        raise ValueError("log_data must be a list")
+def write_to_file(post):
+    
+    #writing the results to a file with a timestamp in the filename
 
-    post = fetch_data()
-
-    filename = f"log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"post_log_{timestamp}.txt"
 
     with open(filename, "w") as file:
-        file.write("=== LOCAL LOG DATA ===\n")
-        for item in log_data:
-            file.write(f"{item}\n")
+        file.write("API DATA REPORT\n")
+        file.write("=" * 40 + "\n")
+        file.write(f"Post ID: {post['id']}\n")
+        file.write(f"Title: {post['title']}\n")
+        file.write(f"Body: {post['body']}\n")
 
-        file.write("\n=== EXTERNAL API DATA ===\n")
-        file.write(f"Title: {post.get('title', 'No title')}\n")
-        file.write(f"Body: {post.get('body', 'No body')}\n")
+    print(f"Results saved to {filename}")
 
-    print(f"Log written to {filename}")
 
-    return filename
+def main():
+    print("Retrieving data from API...")
+
+    post = fetch_post()
+
+    if post:
+        print("Post retrieved successfully.")
+        print("Title:", post["title"])
+        write_to_file(post)
+    else:
+        print("No data retrieved.")
 
 
 if __name__ == "__main__":
-    sample_logs = [
-        "User logged in",
-        "User updated profile",
-        "Report exported"
-    ]
-
-    generate_log(sample_logs)
+    main()
