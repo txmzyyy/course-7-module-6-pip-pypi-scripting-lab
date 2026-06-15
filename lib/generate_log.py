@@ -15,22 +15,23 @@ def fetch_post():
         return None
 
 
-def write_to_file(post):
-    
-    #writing the results to a file with a timestamp in the filename
+def generate_log(log_data):
+    """
+    Creates a timestamped log file from a list of entries.
+    """
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"post_log_{timestamp}.txt"
+    if not isinstance(log_data, list):
+        raise ValueError("Input must be a list.")
+
+    filename = f"log_{datetime.now().strftime('%Y%m%d')}.txt"
 
     with open(filename, "w") as file:
-        file.write("API DATA REPORT\n")
-        file.write("=" * 40 + "\n")
-        file.write(f"Post ID: {post['id']}\n")
-        file.write(f"Title: {post['title']}\n")
-        file.write(f"Body: {post['body']}\n")
+        for entry in log_data:
+            file.write(f"{entry}\n")
 
-    print(f"Results saved to {filename}")
+    print(f"Log written to {filename}")
 
+    return filename
 
 def main():
     print("Retrieving data from API...")
@@ -40,7 +41,12 @@ def main():
     if post:
         print("Post retrieved successfully.")
         print("Title:", post["title"])
-        write_to_file(post)
+        log_data = [
+            f"Post ID: {post['id']}",
+            f"Title: {post['title']}",
+            f"Body: {post['body']}"
+        ]
+        generate_log(log_data)
     else:
         print("No data retrieved.")
 
